@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String
+  category      String
+  subCategory   String
+  fit           String
+  price         Float
+  originalPrice Float?
+  description   String
+  details       String   // Array of strings stored as JSON
+  images        String   // Array of strings stored as JSON
+  isNew         Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  stock         Stock?
+}
+
+model Stock {
+  id        Int     @id @default(autoincrement())
+  productId Int     @unique
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  S         Int     @default(0)
+  M         Int     @default(0)
+  L         Int     @default(0)
+  XL        Int     @default(0)
+  XXL       Int     @default(0)
+}
+
+model PromoCode {
+  id         Int      @id @default(autoincrement())
+  code       String   @unique
+  discount   Float    // percentage multiplier (e.g., 0.20)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
