@@ -17,11 +17,7 @@ function createPrismaClient(): PrismaClient {
         url: tursoUrl,
         authToken: tursoToken,
       });
-      // Vercel serverless environment bypass
-      return new PrismaClient({ 
-        adapter,
-        datasourceUrl: "file::memory:?cache=shared" 
-      } as any);
+      return new PrismaClient({ adapter } as any);
     } catch (e) {
       console.error('[Prisma] Error creating Turso adapter:', e);
     }
