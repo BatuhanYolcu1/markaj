@@ -12,11 +12,19 @@ function createPrismaClient(): PrismaClient {
 
   if (tursoUrl) {
     console.log('[Prisma] Using Turso cloud database:', tursoUrl.substring(0, 40));
-    const adapter = new PrismaLibSQL({
-      url: tursoUrl,
-      authToken: tursoToken,
-    });
-    return new PrismaClient({ adapter } as any);
+    try {
+      const adapter = new PrismaLibSQL({
+        url: tursoUrl,
+        authToken: tursoToken,
+      });
+      // Vercel serverless environment bypass
+      return new PrismaClient({ 
+        adapter,
+        datasourceUrl: "file::memory:?cache=shared" 
+      } as any);
+    } catch (e) {
+      console.error('[Prisma] Error creating Turso adapter:', e);
+    }
   }
 
   console.log('[Prisma] Using local SQLite database');
