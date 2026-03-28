@@ -1,8 +1,7 @@
-import { PrismaClient } from '@prisma/client';
 import Link from 'next/link';
 import { deleteProduct } from '../actions';
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminProductsPage() {
