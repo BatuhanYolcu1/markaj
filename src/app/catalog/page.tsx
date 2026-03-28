@@ -28,6 +28,7 @@ function CatalogContent() {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedFits, setSelectedFits] = useState<string[]>([]);
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState('recommended');
   const [currentPage, setCurrentPage] = useState(1);
   const { toggleFavorite, isFavorite } = useFavorites();
   const searchParams = useSearchParams();
@@ -64,7 +65,7 @@ function CatalogContent() {
   const fits = ['Oversize', 'Baggy', 'Boxy', 'Relaxed'];
 
   const filteredProducts = useMemo(() => {
-    return products.filter(p => {
+    let result = products.filter(p => {
       // Mega Menü'den "Yeni Gelenler" gelirse
       if (selectedCategory === 'Yeni Gelenler' && !p.isNew) return false;
       
@@ -84,7 +85,21 @@ function CatalogContent() {
       }
       return true;
     });
-  }, [selectedCategory, selectedSubCategory, selectedSizes, selectedFits, products]);
+
+    if (sortOrder === 'price-asc') {
+      result.sort((a, b) => a.price - b.price);
+    } else if (sortOrder === 'price-desc') {
+      result.sort((a, b) => b.price - a.price);
+    } else if (sortOrder === 'newest') {
+      result.sort((a, b) => {
+        if (a.isNew && !b.isNew) return -1;
+        if (!a.isNew && b.isNew) return 1;
+        return b.id - a.id;
+      });
+    }
+
+    return result;
+  }, [selectedCategory, selectedSubCategory, selectedSizes, selectedFits, products, sortOrder]);
 
   if (loading) return <div className="min-h-screen flex items-center justify-center font-headline font-black text-2xl uppercase text-secondary tracking-widest w-full">Yükleniyor...</div>;
 
@@ -198,15 +213,20 @@ function CatalogContent() {
           </div>
           <div className="relative">
             <button onClick={() => setIsSortOpen(!isSortOpen)} className="flex items-center gap-4 text-xs font-bold tracking-widest uppercase border-b border-outline-variant/30 pb-2 min-w-[200px] justify-between cursor-pointer text-secondary hover:text-primary transition-colors">
-              <span>Sırala: Önerilenler</span>
+              <span>
+                 {sortOrder === 'recommended' && 'Sırala: Önerilenler'}
+                 {sortOrder === 'price-asc' && 'Sırala: Fiyat (Artan)'}
+                 {sortOrder === 'price-desc' && 'Sırala: Fiyat (Azalan)'}
+                 {sortOrder === 'newest' && 'Sırala: En Yeniler'}
+              </span>
               <span className={`material-symbols-outlined !text-lg transition-transform ${isSortOpen ? 'rotate-180' : ''}`}>expand_more</span>
             </button>
             {isSortOpen && (
                <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container border border-outline-variant/30 rounded-lg shadow-2xl z-20 flex flex-col p-2">
-                 <button onClick={() => setIsSortOpen(false)} className="text-left text-xs font-bold text-primary p-3 bg-surface rounded">Önerilenler</button>
-                 <button onClick={() => setIsSortOpen(false)} className="text-left text-xs font-bold text-secondary hover:text-primary hover:bg-surface p-3 rounded transition-colors">Fiyat: Artan</button>
-                 <button onClick={() => setIsSortOpen(false)} className="text-left text-xs font-bold text-secondary hover:text-primary hover:bg-surface p-3 rounded transition-colors">Fiyat: Azalan</button>
-                 <button onClick={() => setIsSortOpen(false)} className="text-left text-xs font-bold text-secondary hover:text-primary hover:bg-surface p-3 rounded transition-colors">En Yeniler</button>
+                 <button onClick={() => { setSortOrder('recommended'); setIsSortOpen(false); }} className={`text-left text-xs font-bold p-3 rounded transition-colors ${sortOrder === 'recommended' ? 'bg-surface text-primary' : 'text-secondary hover:text-primary hover:bg-surface'}`}>Önerilenler</button>
+                 <button onClick={() => { setSortOrder('price-asc'); setIsSortOpen(false); }} className={`text-left text-xs font-bold p-3 rounded transition-colors ${sortOrder === 'price-asc' ? 'bg-surface text-primary' : 'text-secondary hover:text-primary hover:bg-surface'}`}>Fiyat: Artan</button>
+                 <button onClick={() => { setSortOrder('price-desc'); setIsSortOpen(false); }} className={`text-left text-xs font-bold p-3 rounded transition-colors ${sortOrder === 'price-desc' ? 'bg-surface text-primary' : 'text-secondary hover:text-primary hover:bg-surface'}`}>Fiyat: Azalan</button>
+                 <button onClick={() => { setSortOrder('newest'); setIsSortOpen(false); }} className={`text-left text-xs font-bold p-3 rounded transition-colors ${sortOrder === 'newest' ? 'bg-surface text-primary' : 'text-secondary hover:text-primary hover:bg-surface'}`}>En Yeniler</button>
                </div>
             )}
           </div>
