@@ -23,9 +23,11 @@ export default function NewProductPage() {
       const data = await res.json();
       if (data.urls) {
         setUploadedImages(prev => [...prev, ...data.urls]);
+      } else if (data.error) {
+        alert('Sunucu Hatası: ' + data.error);
       }
-    } catch (err) {
-      alert('Görsel yükleme başarısız!');
+    } catch (err: any) {
+      alert('Görsel yükleme başarısız! Hata: ' + (err.message || err));
     }
     setUploading(false);
   };
