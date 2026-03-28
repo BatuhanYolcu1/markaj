@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { put } from '@vercel/blob';
 
 export async function POST(request: Request) {
   try {
@@ -11,23 +10,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No files uploaded' }, { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
-
     const urls: string[] = [];
 
     for (const file of files) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
+      // Vercel Blob's put function takes the file name and the file object directly
+      const blob = await put(file.name, file, { 
+        access: 'public',
+        // addRandomSuffix is true by default, keeping filenames unique
+      });
 
-      // Generate unique filename
-      const timestamp = Date.now();
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const filename = `${timestamp}_${safeName}`;
-      const filepath = path.join(uploadDir, filename);
-
-      await writeFile(filepath, buffer);
-      urls.push(`/uploads/${filename}`);
+      urls.push(blob.url);
     }
 
     return NextResponse.json({ urls });
