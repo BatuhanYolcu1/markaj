@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       // Vercel Blob's put function takes the file name and the file object directly
       const blob = await put(file.name, file, { 
         access: 'public',
-        // addRandomSuffix is true by default, keeping filenames unique
+        addRandomSuffix: true,
       });
 
       urls.push(blob.url);
