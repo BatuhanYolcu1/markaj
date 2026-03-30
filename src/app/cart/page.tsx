@@ -5,9 +5,10 @@ import { useCart } from '@/hooks/useCart';
 import { useState } from 'react';
 
 export default function Cart() {
-  const { cart, loaded, updateQuantity, removeItem } = useCart();
+  const { cart, loaded, updateQuantity, removeItem, clearCart } = useCart();
   const [discountCode, setDiscountCode] = useState('');
   const [discountRate, setDiscountRate] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   if (!loaded) return <div className="min-h-screen flex items-center justify-center text-xl font-headline font-black uppercase tracking-widest text-secondary">Yükleniyor...</div>;
 
@@ -33,27 +34,57 @@ export default function Cart() {
   const total = subtotal - discountAmount;
 
   // WHATSAPP CHECKOUT LOGIC
-  const handleWhatsAppCheckout = () => {
-    const phoneNumber = "905550000000"; 
-    let message = "Selam MARKAJ! Şiparişim aşağıdaki gibidir:\n\n";
-    
-    cart.forEach(item => {
-      message += `▪️ ${item.name} (${item.size})\n   Birim Fiyat: ${item.price} TL x ${item.quantity} Adet\n`;
-    });
+  const handleWhatsAppCheckout = async () => {
+    if (cart.length === 0) return;
+    setIsProcessing(true);
 
-    message += `\n------------------\n`;
-    message += `🛒 Ara Toplam: ${subtotal.toLocaleString('tr-TR')} TL\n`;
-    
-    if (discountRate > 0) {
-      message += `🎟️ İndirim Kodu (${discountCode.toUpperCase()} - %${discountRate * 100}): -${discountAmount.toLocaleString('tr-TR')} TL\n`;
+    try {
+      // 1. Backend'e sepeti gönderip stokları düşme işlemi
+      const res = await fetch('/api/checkout/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cart })
+      });
+
+      if (!res.ok) {
+        throw new Error('Sipariş işlenirken (stok güncellenirken) bir hata oluştu');
+      }
+
+      // 2. WhatsApp Mesajını Hazırla
+      const phoneNumber = "905550000000"; 
+      let message = "Selam MARKAJ! Şiparişim aşağıdaki gibidir:\n\n";
+      
+      cart.forEach(item => {
+        message += `▪️ ${item.name} (${item.size})\n   Birim Fiyat: ${item.price} TL x ${item.quantity} Adet\n`;
+      });
+
+      message += `\n------------------\n`;
+      message += `🛒 Ara Toplam: ${subtotal.toLocaleString('tr-TR')} TL\n`;
+      
+      if (discountRate > 0) {
+        message += `🎟️ İndirim Kodu (${discountCode.toUpperCase()} - %${discountRate * 100}): -${discountAmount.toLocaleString('tr-TR')} TL\n`;
+      }
+      
+      message += `📦 Kargo: Ücretsiz\n`;
+      message += `🚀 *Ödenecek Tutar: ${total.toLocaleString('tr-TR')} TL*\n`;
+      message += `\nÖdemeyi EFT/Havale yoluyla gerçekleştirmek istiyorum, adımları alabilir miyim?`;
+
+      // 3. WhatsApp yeni sekmede aç ve Sepeti boşalt
+      const encodedMessage = encodeURIComponent(message);
+      
+      // Mobilde popup engelleyiciye takılmamak için bazen window.location.href kullanılır
+      // ancak _blank kullanımı da web sürümü için ideal.
+      window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
+      
+      if (clearCart) {
+        clearCart();
+      }
+
+    } catch (err) {
+      alert("Hata: " + (err instanceof Error ? err.message : "Sistem hatası"));
+    } finally {
+      setIsProcessing(false);
     }
-    
-    message += `📦 Kargo: Ücretsiz\n`;
-    message += `🚀 *Ödenecek Tutar: ${total.toLocaleString('tr-TR')} TL*\n`;
-    message += `\nÖdemeyi EFT/Havale yoluyla gerçekleştirmek istiyorum, adımları alabilir miyim?`;
-
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, '_blank');
   };
 
   return (
@@ -162,11 +193,11 @@ export default function Cart() {
               
               <button 
                  onClick={handleWhatsAppCheckout}
-                 disabled={cart.length === 0}
+                 disabled={cart.length === 0 || isProcessing}
                  className="w-full bg-[#25D366] text-white py-5 rounded-xl font-headline font-black uppercase tracking-[0.2em] text-[13px] shadow-xl shadow-[#25D366]/20 hover:bg-[#128C7E] transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
               >
-                WhatsApp İle Sipariş Ver
-                <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">send</span>
+                {isProcessing ? 'Siparişiniz Hazırlanıyor...' : 'WhatsApp İle Sipariş Ver'}
+                {!isProcessing && <span className="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">send</span>}
               </button>
             </div>
           </div>

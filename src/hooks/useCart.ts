@@ -75,5 +75,9 @@ export function useCart() {
     saveCart(cart.filter(item => item.id !== id));
   };
 
-  return { cart, loaded, addToCart, updateQuantity, removeItem };
+  const clearCart = () => {
+    saveCart([]);
+  };
+
+  return { cart, loaded, addToCart, updateQuantity, removeItem, clearCart };
 }
