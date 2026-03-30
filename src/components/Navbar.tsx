@@ -75,7 +75,8 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-surface-container-low/95 backdrop-blur-2xl border-b border-outline-variant/30 transition-all duration-300">
+    <>
+      <header className="sticky top-0 z-50 w-full bg-surface-container-low/95 backdrop-blur-2xl border-b border-outline-variant/30 transition-all duration-300">
       <div className="max-w-[1920px] mx-auto flex items-center h-[80px] px-6 lg:px-12 relative">
         
         {/* Mobile Hamburger */}
@@ -281,6 +282,8 @@ export default function Navbar() {
         </div>
       </div>
 
+      </header>
+
       {/* ==================== MOBILE MENU OVERLAY ==================== */}
       <div className="lg:hidden">
         {/* Backdrop */}
@@ -369,6 +372,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }
