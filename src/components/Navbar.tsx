@@ -282,13 +282,15 @@ export default function Navbar() {
       </div>
 
       {/* ==================== MOBILE MENU OVERLAY ==================== */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] lg:hidden">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setMobileMenuOpen(false); setMobileSubMenu(null); }}></div>
-          
-          {/* Drawer */}
-          <div className="absolute top-0 left-0 h-full w-[85vw] max-w-[380px] bg-surface-container-low shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
+      <div className="lg:hidden">
+        {/* Backdrop */}
+        <div 
+          className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`} 
+          onClick={() => { setMobileMenuOpen(false); setMobileSubMenu(null); }}
+        ></div>
+        
+        {/* Drawer */}
+        <div className={`fixed top-0 left-0 h-full w-[85vw] max-w-[380px] bg-surface-container-low shadow-2xl flex flex-col z-[100] transition-transform duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             {/* Header */}
             <div className="h-20 flex items-center justify-between px-8 border-b border-outline-variant/20 shrink-0">
               <span className="font-headline font-black text-2xl tracking-tighter">MARKAJ<span className="text-orange-600">.</span></span>
@@ -313,13 +315,13 @@ export default function Navbar() {
                     Üst Giyim
                     <span className={`material-symbols-outlined text-lg transition-transform ${mobileSubMenu === 'ust' ? '-rotate-180' : ''}`}>keyboard_arrow_down</span>
                   </button>
-                  {mobileSubMenu === 'ust' && (
-                    <ul className="ml-4 border-l-2 border-orange-600/20 pl-4 py-2 space-y-1">
+                  <div className={`grid transition-all duration-300 ease-in-out ${mobileSubMenu === 'ust' ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+                    <ul className="overflow-hidden ml-4 border-l-2 border-orange-600/20 pl-4 space-y-1">
                       {['T-Shirt', 'Hoodie', 'Sweatshirt', 'Gömlek', 'Kazak'].map(sub => (
                         <li key={sub}><button onClick={() => navigateAndClose(`/catalog?cat=Üst+Giyim&sub=${sub}`)} className="w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest text-secondary hover:text-orange-600 transition-colors rounded-lg hover:bg-surface-container">{sub}</button></li>
                       ))}
                     </ul>
-                  )}
+                  </div>
                 </li>
 
                 {/* Alt Giyim */}
@@ -328,13 +330,13 @@ export default function Navbar() {
                     Alt Giyim
                     <span className={`material-symbols-outlined text-lg transition-transform ${mobileSubMenu === 'alt' ? '-rotate-180' : ''}`}>keyboard_arrow_down</span>
                   </button>
-                  {mobileSubMenu === 'alt' && (
-                    <ul className="ml-4 border-l-2 border-orange-600/20 pl-4 py-2 space-y-1">
+                  <div className={`grid transition-all duration-300 ease-in-out ${mobileSubMenu === 'alt' ? 'grid-rows-[1fr] opacity-100 mt-2' : 'grid-rows-[0fr] opacity-0 mt-0'}`}>
+                    <ul className="overflow-hidden ml-4 border-l-2 border-orange-600/20 pl-4 space-y-1">
                       {['Baggy Jean', 'Kargo Pantolon', 'Eşofman Altı', 'Şort'].map(sub => (
                         <li key={sub}><button onClick={() => navigateAndClose(`/catalog?cat=Alt+Giyim&sub=${sub}`)} className="w-full text-left px-4 py-3 text-xs font-bold uppercase tracking-widest text-secondary hover:text-orange-600 transition-colors rounded-lg hover:bg-surface-container">{sub}</button></li>
                       ))}
                     </ul>
-                  )}
+                  </div>
                 </li>
 
                 <li>
@@ -364,10 +366,9 @@ export default function Navbar() {
               <button onClick={() => navigateAndClose('/favorites')} className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-widest text-secondary hover:text-on-surface transition-colors rounded-xl hover:bg-surface-container">
                 <span className="material-symbols-outlined text-xl">favorite</span> Favorilerim
               </button>
-            </div>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }
